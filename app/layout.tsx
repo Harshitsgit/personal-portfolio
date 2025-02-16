@@ -14,7 +14,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <main className="min-h-screen bg-black text-white">
           <Header />
-          <div className="py-24">{children}</div>
+          {children}
           <Footer />
         </main>
       </body>

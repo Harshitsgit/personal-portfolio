@@ -8,10 +8,12 @@ import Header from "./components/header";
 export default function Page() {
   return (
     <>
-      <Hero />
-      <Gallery />
-      <Portfolio />
-      <Contact />
+      <div className="pb-8">
+        <Hero />
+        <Gallery />
+        <Portfolio />
+        <Contact />
+      </div>
     </>
   );
 }
