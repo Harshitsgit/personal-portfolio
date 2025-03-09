@@ -6,8 +6,10 @@ import { Camera, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type React from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+  const router = useRouter();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const toggleDrawer = () => setDrawerOpen((prev) => !prev);
@@ -36,7 +38,10 @@ export default function Header() {
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Button className="bg-indigo-700 hover:bg-indigo-900 text-white">
+          <Button
+            className="bg-indigo-700 hover:bg-indigo-900 text-white"
+            onClick={() => router.push("/contact")}
+          >
             Contact Us
           </Button>
         </div>

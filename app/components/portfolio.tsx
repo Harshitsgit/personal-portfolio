@@ -61,8 +61,8 @@ export default function Portfolio() {
 
   return (
     <section className="bg-black py-20">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 flex flex-wrap justify-center gap-4">
+      <div className="container mx-auto max-w-6xl">
+        <div className="mb-12 flex flex-wrap justify-center gap-4 items-center">
           {categories.map((category) => (
             <Button
               key={category}
