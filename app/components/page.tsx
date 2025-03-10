@@ -1,3 +1,4 @@
+"use client";
 import type React from "react";
 import { useState } from "react";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
