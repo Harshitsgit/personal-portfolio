@@ -43,20 +43,6 @@ export class AuthService {
     }
   }
 
-  async signUp(
-    email: string,
-    password: string,
-    name: string
-  ): Promise<Apiresponse<Models.Session>> {
-    try {
-      await this.account.create(ID.unique(), email, password, name);
-      return await this.signIn(email, password);
-    } catch (error) {
-      console.log("🚀 ~ AuthService ~ signUp ~ error:", error);
-      return handleApiError(error);
-    }
-  }
-
   async getUser(): Promise<Apiresponse<Models.User<Models.Preferences>>> {
     try {
       const userData = await this.account.get();

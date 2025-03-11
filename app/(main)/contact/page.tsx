@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { sendMail } from "@/lib/sendMail";
+import Toaster from "@/app/components/Toaster";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,13 @@ export default function Contact() {
     subject: "",
     message: "",
   });
+
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | null;
+  }>({ message: "", type: null });
+
+  const [isSending, setIsSending] = useState<boolean>(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -25,14 +34,36 @@ export default function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission logic here
-    console.log("Form submitted:", formData);
+    setIsSending(true);
+    sendMail({
+      subject: formData.subject,
+      text: formData.message,
+      email: formData.email,
+    })
+      .then((res) => {
+        if (res) {
+          setToast({ message: "Email sent Succesfully", type: "success" });
+          setFormData({ name: "", email: "", subject: "", message: "" });
+          setIsSending(false);
+        }
+      })
+      .catch((err) => {
+        setToast({ message: "Email not sent", type: "error" });
+        setIsSending(false);
+      });
     // Reset form
-    setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
   return (
     <div className="pb-20 pt-16 px-10 flex flex-col items-center justify-center min-h-screen bg-black text-white">
       {/* Header */}
+      {toast.type && (
+        <Toaster
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ message: "", type: null })}
+        />
+      )}
       <header className="container mx-auto py-4 max-w-6xl ">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
           Contact Us
@@ -183,8 +214,10 @@ export default function Contact() {
                 <Button
                   type="submit"
                   className="w-full bg-indigo-500 hover:bg-indigo-700"
+                  disabled={isSending}
                 >
-                  <Send className="mr-2 h-4 w-4" /> Send Message
+                  <Send className="mr-2 h-4 w-4" />
+                  {!isSending ? "Send Message" : "Sending..."}
                 </Button>
               </div>
             </form>
