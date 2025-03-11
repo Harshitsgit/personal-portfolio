@@ -26,13 +26,11 @@ export default function Page() {
     },
   ];
   return (
-    <>
-      <div className="pb-8">
-        <Hero />
-        <Gallery images={images} />
-        <Portfolio />
-        {/* <Contact /> */}
-      </div>
-    </>
+    <div className="pb-8">
+      <Hero />
+      <Gallery images={images} />
+      <Portfolio />
+      {/* <Contact /> */}
+    </div>
   );
 }

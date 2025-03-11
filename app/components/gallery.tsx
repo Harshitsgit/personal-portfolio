@@ -110,7 +110,7 @@ export default function Gallery({
   images,
   width = 350,
   height = 450,
-}: GalleryProps) {
+}: Readonly<GalleryProps>) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
 
