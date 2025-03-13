@@ -2,16 +2,17 @@
 import React, { useEffect, useState } from "react";
 import DynamicImageSection from "@/app/components/DynamicImageSection";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
-import { ImageItem, Section } from "@/types";
+import { Images, Section } from "@/types";
 import { nanoid } from "nanoid";
 import { galleryService } from "@/services";
 import { Query } from "appwrite";
+import converter from "@/utils/appWriteDataToImageDocument";
 
 const Home: React.FC = () => {
-  const [homeFeaturedWorks, setHomeFeaturedWorks] = useState<ImageItem[]>([]);
-  const [homeWedding, setHomeWedding] = useState<ImageItem[]>([]);
-  const [homePersonal, setHomePersonal] = useState<ImageItem[]>([]);
-  const [homeMaternity, setHomeMaternity] = useState<ImageItem[]>([]);
+  const [homeFeaturedWorks, setHomeFeaturedWorks] = useState<Images[]>([]);
+  const [homeWedding, setHomeWedding] = useState<Images[]>([]);
+  const [homePersonal, setHomePersonal] = useState<Images[]>([]);
+  const [homeMaternity, setHomeMaternity] = useState<Images[]>([]);
 
   const sections: Section[] = [
     {
@@ -46,27 +47,35 @@ const Home: React.FC = () => {
 
   const getHomeFeaturedWorksDocuments = async () => {
     const documents = await galleryService.getDocuments([
+      Query.select(["$id", "src", "alt", "title", "category"]),
       Query.equal("category", imageUploadCategory.HOME_FEATUREDWORKS),
     ]);
-    if (documents?.data) setHomeFeaturedWorks(documents.data);
+    if (documents?.data) {
+      setHomeFeaturedWorks(converter(documents.data));
+    }
   };
   const getHomeWeddingDocuments = async () => {
     const documents = await galleryService.getDocuments([
+      Query.select(["$id", "src", "alt", "title", "category"]),
       Query.equal("category", imageUploadCategory.HOME_WEDDING),
     ]);
-    if (documents?.data) setHomeWedding(documents.data);
+    if (documents?.data) {
+      setHomeWedding(converter(documents.data));
+    }
   };
   const getHomePersonalDocuments = async () => {
     const documents = await galleryService.getDocuments([
+      Query.select(["$id", "src", "alt", "title", "category"]),
       Query.equal("category", imageUploadCategory.HOME_PERSONAL),
     ]);
-    if (documents?.data) setHomePersonal(documents.data);
+    if (documents?.data) setHomePersonal(converter(documents.data));
   };
   const getHomeMaternityDocuments = async () => {
     const documents = await galleryService.getDocuments([
+      Query.select(["$id", "src", "alt", "title", "category"]),
       Query.equal("category", imageUploadCategory.HOME_MATERNITY),
     ]);
-    if (documents?.data) setHomeMaternity(documents.data);
+    if (documents?.data) setHomeMaternity(converter(documents.data));
   };
 
   useEffect(() => {

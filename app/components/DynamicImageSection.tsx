@@ -5,7 +5,7 @@ import { CirclePlus, CircleX } from "lucide-react";
 import { fileService, galleryService } from "@/services";
 import { useToast } from "../context/ToastContextProvider";
 import { Messages, StatusCodes } from "@/constants";
-import { ImageItem } from "@/types";
+import { Images } from "@/types";
 import { nanoid } from "nanoid";
 
 const DynamicImageSection = ({
@@ -17,7 +17,7 @@ const DynamicImageSection = ({
 }: {
   sectionTitle: string;
   fileAddLimit?: number;
-  items: ImageItem[] | [];
+  items: Images[] | [];
   setItems: any;
   category: string;
 }) => {
@@ -42,11 +42,16 @@ const DynamicImageSection = ({
           //   return;
           // }
 
-          // Update state with valid image preview
-          setItems((prevItems: ImageItem[]) =>
+          // Update state with valid image src
+          setItems((prevItems: Images[]) =>
             prevItems.map((item) =>
               item.id === id
-                ? { ...item, preview: reader.result as string, file }
+                ? {
+                    ...item,
+                    src: reader.result as string,
+                    file,
+                    isAlreadyUploaded: false,
+                  }
                 : item
             )
           );
@@ -66,7 +71,7 @@ const DynamicImageSection = ({
       const createdDocument = await galleryService.createDocument({
         fileId: response.data || "",
         src: url.data || "",
-        alt: `${sectionTitle.replaceAll(" ", "-")}`,
+        alt: `${item.label.replaceAll(" ", "-")}`,
         title: "",
         category,
         description: "",
@@ -77,7 +82,7 @@ const DynamicImageSection = ({
       )
         showToast("File uploaded succesfully", "success");
       else showToast("Problem while uploading file", "error");
-    }
+    } else showToast("Please select file to upload", "error");
   };
 
   // Add a new image upload item.
@@ -88,9 +93,15 @@ const DynamicImageSection = ({
     }
     const newId = nanoid();
     const newLabel = `${initialLabel} ${items.length + 1}`;
-    setItems((prevItems: ImageItem[]) => [
+
+    setItems((prevItems: Images[]) => [
       ...prevItems,
-      { id: newId, preview: "", file: null, label: newLabel },
+      {
+        id: newId,
+        src: "",
+        file: null,
+        label: newLabel,
+      },
     ]);
   };
 
@@ -102,7 +113,7 @@ const DynamicImageSection = ({
 
     const [item] = items.filter((e) => e.id === id);
     if (!item?.src) {
-      setItems((prevItems: ImageItem[]) =>
+      setItems((prevItems: Images[]) =>
         prevItems.filter((item) => item.id !== id)
       );
       return;
@@ -111,7 +122,7 @@ const DynamicImageSection = ({
       if (res.status === StatusCodes.SUCCESS_STATUS)
         galleryService.deleteDocument(item?.$id ?? "").then((res) => {
           if (res.status === StatusCodes.SUCCESS_STATUS) {
-            setItems((prevItems: ImageItem[]) =>
+            setItems((prevItems: Images[]) =>
               prevItems.filter((item) => item.id !== id)
             );
             showToast(Messages.SUCCESS_MESSAGE, "success");
@@ -132,10 +143,11 @@ const DynamicImageSection = ({
         {items?.map((item) => (
           <div key={item.id} className="relative">
             <ImageUpload
-              label={item.label}
-              preview={item?.src || item.preview || ""}
+              label={item.label || sectionTitle}
+              src={item?.src || ""}
               onFileChange={(file) => handleFileChange(file, item.id)}
               onUpload={() => handleUpload(item.id)}
+              isAlreadyUploaded={item.isAlreadyUploaded}
             />
             {items.length !== 4 && (
               <button
@@ -150,7 +162,7 @@ const DynamicImageSection = ({
         {items.length < 4 && (
           <div className="flex justify-center">
             <button
-              onClick={() => handleAddItem("Featurer_Works")}
+              onClick={() => handleAddItem(sectionTitle)}
               className="py-2 px-4 hover:bg-white-700 text-white rounded transition-colors"
             >
               <CirclePlus size={80} strokeWidth={0.5} />
@@ -161,7 +173,7 @@ const DynamicImageSection = ({
       {items.length > 3 && (
         <div className="flex justify-center">
           <button
-            onClick={() => handleAddItem("Featurer_Works")}
+            onClick={() => handleAddItem(sectionTitle)}
             className="py-2 px-4 hover:bg-white-700 text-white rounded transition-colors"
           >
             <CirclePlus size={80} strokeWidth={0.5} />

@@ -10,9 +10,8 @@ export type Apiresponse<T = Record<string, unknown> | [] | null> = {
 };
 
 export type ImageItem = {
-  src?: string;
+  src: string;
   id: string;
-  preview: string | null | ArrayBuffer;
   file: File | null;
   label: string;
   $id?: string;
@@ -23,6 +22,15 @@ export type Section = {
   id: string;
   title: string;
   category: string;
-  items: ImageItem[];
+  items: Images[];
   setItems: any;
+};
+
+export type Images = {
+  $id: string;
+  src: string;
+  title?: string;
+  alt?: string;
+  description?: string;
+  [key: string]: any;
 };

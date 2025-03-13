@@ -1,7 +1,8 @@
 import { conf } from "@/conf/conf";
 import { Messages, StatusCodes } from "@/constants";
+import { Apiresponse } from "@/types";
 import { handleApiError } from "@/utils";
-import { Client, ID, Databases, Storage, Query } from "appwrite";
+import { Client, ID, Databases, Storage, Query, Models } from "appwrite";
 
 export class GalleryService {
   client = new Client();
@@ -116,7 +117,9 @@ export class GalleryService {
     }
   }
 
-  async getDocuments(queries = [Query.equal("category", "weding")]) {
+  async getDocuments(
+    queries = [Query.equal("category", "weding")]
+  ): Promise<Apiresponse<Models.Document[] | null>> {
     try {
       const documentsList = await this.databases.listDocuments(
         conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,

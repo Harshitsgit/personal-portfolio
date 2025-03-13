@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import DynamicImageSection from "@/app/components/DynamicImageSection";
 import { galleryService } from "@/services";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
-import { Query } from "appwrite";
-import { ImageItem, Section } from "@/types";
+import { Models, Query } from "appwrite";
+import { Apiresponse, Images, Section } from "@/types";
 import { nanoid } from "nanoid";
 
 const Home: React.FC = () => {
-  const [items, setItems] = useState<ImageItem[]>([]);
+  const [items, setItems] = useState<Images[]>([]);
 
   const sections: Section[] = [
     {
@@ -21,10 +21,20 @@ const Home: React.FC = () => {
   ];
 
   const getDocuments = async () => {
-    const documents = await galleryService.getDocuments([
-      Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
-    ]);
-    if (documents?.data) setItems(documents.data);
+    const documents: Apiresponse<Models.Document[] | null> =
+      await galleryService.getDocuments([
+        Query.select(["$id", "src", "alt", "title", "category"]),
+        Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
+      ]);
+    if (documents?.data?.length) {
+      const images: Images[] = documents.data.map((doc) => ({
+        ...doc,
+        src: doc.src || "/placeholder.jpg", // Ensure 'src' exists
+        title: doc.title || "Untitled",
+        alt: doc.alt || "Image",
+      }));
+      setItems(images);
+    }
   };
 
   useEffect(() => {
