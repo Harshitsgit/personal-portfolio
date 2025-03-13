@@ -8,27 +8,37 @@ export class FileService {
   storage;
   constructor() {
     this.client = new Client()
-      .setEndpoint(conf.APPWRITE_URL)
-      .setProject(conf.APPWRITE_PROJECT_ID);
+      .setEndpoint(conf.NEXT_PUBLIC_APPWRITE_URL)
+      .setProject(conf.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
     this.storage = new Storage(this.client);
   }
 
-  async createFile(file: File): Promise<Apiresponse<null>> {
+  async createFile(file: File): Promise<Apiresponse<null | string>> {
     try {
-      await this.storage.createFile(conf.APPWRITE_BUCKET_ID, ID.unique(), file);
+      const id = ID.unique();
+      await this.storage.createFile(
+        conf.NEXT_PUBLIC_APPWRITE_BUCKET_ID,
+        id,
+        file
+      );
+
       return {
         status: StatusCodes.SUCCESS_STATUS,
-        data: null,
+        data: id,
         message: Messages.SUCCESS_MESSAGE,
       };
     } catch (error) {
+      console.log(error);
       return handleApiError(error);
     }
   }
 
   async deleteFile(fileId: string): Promise<Apiresponse<null>> {
     try {
-      await this.storage.deleteFile(conf.APPWRITE_BUCKET_ID, fileId);
+      await this.storage.deleteFile(
+        conf.NEXT_PUBLIC_APPWRITE_BUCKET_ID,
+        fileId
+      );
       return {
         status: StatusCodes.SUCCESS_STATUS,
         data: null,
@@ -42,7 +52,7 @@ export class FileService {
   getFilePreview(fileId: string): Apiresponse<string | null> {
     try {
       const result: string = this.storage.getFilePreview(
-        conf.APPWRITE_BUCKET_ID,
+        conf.NEXT_PUBLIC_APPWRITE_BUCKET_ID,
         fileId
       );
 

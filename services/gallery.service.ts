@@ -1,4 +1,6 @@
 import { conf } from "@/conf/conf";
+import { Messages, StatusCodes } from "@/constants";
+import { handleApiError } from "@/utils";
 import { Client, ID, Databases, Storage, Query } from "appwrite";
 
 export class GalleryService {
@@ -8,50 +10,70 @@ export class GalleryService {
 
   constructor() {
     this.client
-      .setEndpoint(conf.APPWRITE_URL)
-      .setProject(conf.APPWRITE_PROJECT_ID);
+      .setEndpoint(conf.NEXT_PUBLIC_APPWRITE_URL)
+      .setProject(conf.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
     this.databases = new Databases(this.client);
     this.bucket = new Storage(this.client);
   }
 
   async createDocument({
+    fileId,
     src,
     alt,
     title,
     category,
-  }: Readonly<{ src: string; alt: string; title: string; category: string }>) {
+    description,
+  }: Readonly<{
+    fileId: string;
+    src: string;
+    alt: string;
+    title: string;
+    category: string;
+    description: string;
+  }>) {
     try {
-      return await this.databases.createDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_GALLERY_COLLECTION_ID,
+      await this.databases.createDocument(
+        conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         ID.unique(),
-        {
-          src,
-          alt,
-          title,
-          category,
-        }
+        { fileId, src, alt, title, category }
       );
+      return {
+        status: StatusCodes.SUCCESS_STATUS,
+        data: null,
+        message: Messages.SUCCESS_MESSAGE,
+      };
     } catch (error) {
       console.log("Appwrite serive :: createDocument :: error", error);
+      return handleApiError(error);
     }
   }
 
   async updateDocument(
     id: string,
     {
+      fileId,
       src,
       alt,
       title,
       category,
-    }: Readonly<{ src: string; alt: string; title: string; category: string }>
+      description,
+    }: Readonly<{
+      fileId: string;
+      src: string;
+      alt: string;
+      title: string;
+      category: string;
+      description: string;
+    }>
   ) {
     try {
       return await this.databases.updateDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_GALLERY_COLLECTION_ID,
+        conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         id,
         {
+          fileId,
           src,
           alt,
           title,
@@ -66,22 +88,26 @@ export class GalleryService {
   async deleteDocument(id: string) {
     try {
       await this.databases.deleteDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_GALLERY_COLLECTION_ID,
+        conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         id
       );
-      return true;
+      return {
+        status: StatusCodes.SUCCESS_STATUS,
+        data: null,
+        message: Messages.SUCCESS_MESSAGE,
+      };
     } catch (error) {
       console.log("Appwrite serive :: deleteDocument :: error", error);
-      return false;
+      return handleApiError(error);
     }
   }
 
   async getDocument(id: string) {
     try {
       return await this.databases.getDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_GALLERY_COLLECTION_ID,
+        conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         id
       );
     } catch (error) {
@@ -92,14 +118,20 @@ export class GalleryService {
 
   async getDocuments(queries = [Query.equal("category", "weding")]) {
     try {
-      return await this.databases.listDocuments(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_GALLERY_COLLECTION_ID,
+      const documentsList = await this.databases.listDocuments(
+        conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         queries
       );
+
+      return {
+        status: StatusCodes.SUCCESS_STATUS,
+        data: documentsList.documents,
+        message: Messages.SUCCESS_MESSAGE,
+      };
     } catch (error) {
       console.log("Appwrite serive :: getDocuments :: error", error);
-      return false;
+      return handleApiError(error);
     }
   }
 }

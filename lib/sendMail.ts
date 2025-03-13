@@ -5,8 +5,8 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   port: 587,
   auth: {
-    user: conf.SMTP_SERVER_USERNAME,
-    pass: conf.SMTP_SERVER_PASSWORD,
+    user: conf.NEXT_PUBLIC_SMTP_SERVER_USERNAME,
+    pass: conf.NEXT_PUBLIC_SMTP_SERVER_PASSWORD,
   },
   secure: false, // Disable secure connection to avoid self-signed cert issue
   tls: {
@@ -31,20 +31,20 @@ export async function sendMail({
     await transporter.verify();
     const message = `Message from ${email} \n ${text}`;
     const info = await transporter.sendMail({
-      from: conf.SMTP_SERVER_USERNAME,
-      to: conf.SITE_MAIL_RECIEVER,
+      from: conf.NEXT_PUBLIC_SMTP_SERVER_USERNAME,
+      to: conf.NEXT_PUBLIC_SITE_MAIL_RECIEVER,
       subject,
       text: message,
       html: html ?? "",
     });
     console.log("Message Sent", info.messageId);
-    console.log("Mail sent to", conf.SITE_MAIL_RECIEVER);
+    console.log("Mail sent to", conf.NEXT_PUBLIC_SITE_MAIL_RECIEVER);
     return info;
   } catch (error) {
     console.error(
       "Something Went Wrong",
-      conf.SMTP_SERVER_USERNAME,
-      conf.SMTP_SERVER_PASSWORD,
+      conf.NEXT_PUBLIC_SMTP_SERVER_USERNAME,
+      conf.NEXT_PUBLIC_SMTP_SERVER_PASSWORD,
       error
     );
     throw error;

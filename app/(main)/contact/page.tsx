@@ -33,7 +33,6 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
     setIsSending(true);
     sendMail({
       subject: formData.subject,
@@ -51,7 +50,6 @@ export default function Contact() {
         setToast({ message: "Email not sent", type: "error" });
         setIsSending(false);
       });
-    // Reset form
   };
 
   return (

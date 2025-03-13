@@ -1,59 +1,138 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { galleryService } from "@/services";
+import { Query } from "appwrite";
+import { imageUploadCategory } from "@/constants/imageuploadCategory";
 
+export type ImageListing = {
+  id: string;
+  title: string;
+  category: string;
+  src: string;
+  year: string;
+};
 export default function Portfolio() {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [works, setWorks] = useState<ImageListing[]>([]);
 
-  const categories = ["all", "wedding", "personal", "maternity"];
-
-  const works = [
-    {
-      id: 1,
-      title: "Digital Dreamscape",
-      category: "wedding",
-      image: "/recents/1.heic",
-      year: "2024",
-    },
-    {
-      id: 2,
-      title: "Abstract Harmony",
-      category: "wedding",
-      image: "/recents/2.heic",
-      year: "2023",
-    },
-    {
-      id: 3,
-      title: "Metal Flow",
-      category: "maternity",
-      image: "/recents/3.heic",
-      year: "2024",
-    },
-    {
-      id: 4,
-      title: "Neon Nights",
-      category: "personal",
-      image: "/recents/4.heic",
-      year: "2023",
-    },
-    {
-      id: 5,
-      title: "Nature's Whisper",
-      category: "personal",
-      image: "/recents/1.heic",
-      year: "2024",
-    },
-    {
-      id: 6,
-      title: "Bronze Echo",
-      category: "maternity",
-      image: "/recents/2.heic",
-      year: "2023",
-    },
+  const categories = [
+    "all",
+    imageUploadCategory.HOME_WEDDING,
+    imageUploadCategory.HOME_PERSONAL,
+    imageUploadCategory.HOME_MATERNITY,
   ];
+
+  useEffect(() => {
+    const fetchWorks = async () => {
+      try {
+        const res = await galleryService.getDocuments([
+          Query.select(["src", "title", "category", "$id"]),
+          Query.equal("category", [
+            imageUploadCategory.HOME_WEDDING,
+            imageUploadCategory.HOME_PERSONAL,
+            imageUploadCategory.HOME_MATERNITY,
+          ]),
+        ]);
+        setWorks([
+          {
+            id: "1",
+            title: "Digital Dreamscape",
+            category: "wedding",
+            src: "/recents/1.heic",
+            year: "2024",
+          },
+          {
+            id: "2",
+            title: "Abstract Harmony",
+            category: "wedding",
+            src: "/recents/2.heic",
+            year: "2023",
+          },
+          {
+            id: "3",
+            title: "Metal Flow",
+            category: "maternity",
+            src: "/recents/3.heic",
+            year: "2024",
+          },
+          {
+            id: "4",
+            title: "Neon Nights",
+            category: "personal",
+            src: "/recents/4.heic",
+            year: "2023",
+          },
+          {
+            id: "5",
+            title: "Nature's Whisper",
+            category: "personal",
+            src: "/recents/1.heic",
+            year: "2024",
+          },
+          {
+            id: "6",
+            title: "Bronze Echo",
+            category: "maternity",
+            src: "/recents/2.heic",
+            year: "2023",
+          },
+        ]);
+      } catch (error) {
+        console.error("Error fetching works:", error);
+        // Fallback data if API fails
+        setWorks([
+          {
+            id: "1",
+            title: "Digital Dreamscape",
+            category: "wedding",
+            src: "/recents/1.heic",
+            year: "2024",
+          },
+          {
+            id: "2",
+            title: "Abstract Harmony",
+            category: "wedding",
+            src: "/recents/2.heic",
+            year: "2023",
+          },
+          {
+            id: "3",
+            title: "Metal Flow",
+            category: "maternity",
+            src: "/recents/3.heic",
+            year: "2024",
+          },
+          {
+            id: "4",
+            title: "Neon Nights",
+            category: "personal",
+            src: "/recents/4.heic",
+            year: "2023",
+          },
+          {
+            id: "5",
+            title: "Nature's Whisper",
+            category: "personal",
+            src: "/recents/1.heic",
+            year: "2024",
+          },
+          {
+            id: "6",
+            title: "Bronze Echo",
+            category: "maternity",
+            src: "/recents/2.heic",
+            year: "2023",
+          },
+        ]);
+      }
+    };
+
+    fetchWorks();
+  }, []);
 
   const filteredWorks = works.filter((work) =>
     selectedCategory === "all" ? true : work.category === selectedCategory
@@ -62,6 +141,7 @@ export default function Portfolio() {
   return (
     <section className="bg-black py-20">
       <div className="container mx-auto max-w-6xl">
+        {/* Category Filter Buttons */}
         <div className="mb-12 flex flex-wrap justify-center gap-4 items-center">
           {categories.map((category) => (
             <Button
@@ -74,6 +154,8 @@ export default function Portfolio() {
             </Button>
           ))}
         </div>
+
+        {/* Image Grid */}
         <motion.div layout className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence>
             {filteredWorks.map((work) => (
@@ -89,7 +171,7 @@ export default function Portfolio() {
                   <CardContent className="p-0">
                     <div className="group relative">
                       <img
-                        src={work.image || "/placeholder.svg"}
+                        src={work.src || "/placeholder.svg"}
                         alt={work.title}
                         className="w-full transition-transform duration-500 group-hover:scale-105"
                       />

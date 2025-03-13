@@ -1,5 +1,5 @@
+"use client";
 import { Album, BadgeInfo, Home, Wrench } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
@@ -10,42 +10,47 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "/dashboard/home",
+    url: "/admin/home",
     icon: Home,
   },
   {
     title: "Albums",
-    url: "/dashboard/albums",
+    url: "/admin/albums",
     icon: Album,
   },
   {
     title: "Services",
-    url: "/dashboard/services",
+    url: "/admin/services",
     icon: Wrench,
   },
   {
     title: "About",
-    url: "/dashboard/about",
+    url: "/admin/about",
     icon: BadgeInfo,
   },
 ];
 
 export function AppSidebar() {
+  const path = usePathname();
+
   return (
-    <Sidebar>
-      <SidebarContent>
+    <Sidebar className="bg-black shadow-md">
+      <SidebarContent className="bg-black">
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="text-white">
+            Application
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="text-white text-xl font-bold">
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={path === item.url}>
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

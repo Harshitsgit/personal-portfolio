@@ -1,70 +1,139 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import ImageUpload from "@/app/components/ImageUpload";
 import { CirclePlus, CircleX } from "lucide-react";
+import { fileService, galleryService } from "@/services";
+import { useToast } from "../context/ToastContextProvider";
+import { Messages, StatusCodes } from "@/constants";
+import { ImageItem } from "@/types";
+import { nanoid } from "nanoid";
 
-// Define an interface for an image upload item
-interface ImageItem {
-  id: number;
-  preview: string | null | ArrayBuffer;
-  file: File | null;
-  label: string;
-}
+const DynamicImageSection = ({
+  sectionTitle,
+  fileAddLimit = 0,
+  items,
+  setItems,
+  category,
+}: {
+  sectionTitle: string;
+  fileAddLimit?: number;
+  items: ImageItem[] | [];
+  setItems: any;
+  category: string;
+}) => {
+  const { showToast } = useToast();
 
-const DynamicImageSection = ({ sectionTitle }: { sectionTitle: string }) => {
-  const [items, setItems] = useState<ImageItem[]>([]);
+  const handleFileChange = (file: File, id: string) => {
+    if (!file) return;
 
-  // Callback from child component to update the preview & file of an item.
-  const handleFileChange = (file: File, id: number) => {
     const reader = new FileReader();
+
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
-        setItems((prevItems: ImageItem[]) => {
-          return prevItems.map((item) =>
-            item.id === id ? { ...item, preview: reader.result, file } : item
+        const img = new Image();
+        img.src = reader.result;
+
+        img.onload = () => {
+          // if (img.width !== 1440 || img.height !== 1800) {
+          //   showToast(
+          //     "Please upload an image of size 1440 × 1800 px.",
+          //     "error"
+          //   );
+          //   return;
+          // }
+
+          // Update state with valid image preview
+          setItems((prevItems: ImageItem[]) =>
+            prevItems.map((item) =>
+              item.id === id
+                ? { ...item, preview: reader.result as string, file }
+                : item
+            )
           );
-        });
+        };
       }
     };
+
     reader.readAsDataURL(file);
   };
 
   // Handle upload click per item.
-  const handleUpload = (id: number) => {
+  const handleUpload = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (item?.file) {
-      console.log(`Uploading file for item ${id}:`, item.file);
-      // Perform actual upload logic here...
+      const response = await fileService.createFile(item.file);
+      const url = fileService.getFilePreview(response.data || "");
+      const createdDocument = await galleryService.createDocument({
+        fileId: response.data || "",
+        src: url.data || "",
+        alt: `${sectionTitle.replaceAll(" ", "-")}`,
+        title: "",
+        category,
+        description: "",
+      });
+      if (
+        response.status === StatusCodes.SUCCESS_STATUS &&
+        createdDocument.status === StatusCodes.SUCCESS_STATUS
+      )
+        showToast("File uploaded succesfully", "success");
+      else showToast("Problem while uploading file", "error");
     }
   };
 
   // Add a new image upload item.
   const handleAddItem = (initialLabel: string) => {
-    const newId = Date.now();
+    if (fileAddLimit !== 0 && items.length === fileAddLimit) {
+      showToast(`You can add upto ${fileAddLimit} image`, "error");
+      return;
+    }
+    const newId = nanoid();
     const newLabel = `${initialLabel} ${items.length + 1}`;
-    setItems((prevItems) => [
+    setItems((prevItems: ImageItem[]) => [
       ...prevItems,
       { id: newId, preview: "", file: null, label: newLabel },
     ]);
   };
 
   // Remove an image upload item.
-  const handleRemoveItem = (id: number) => {
+  const handleRemoveItem = (id: string) => {
     if (items.length === 4) {
       return;
     }
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+
+    const [item] = items.filter((e) => e.id === id);
+    if (!item?.src) {
+      setItems((prevItems: ImageItem[]) =>
+        prevItems.filter((item) => item.id !== id)
+      );
+      return;
+    }
+    fileService.deleteFile(item.fileId ?? "").then((res) => {
+      if (res.status === StatusCodes.SUCCESS_STATUS)
+        galleryService.deleteDocument(item?.$id ?? "").then((res) => {
+          if (res.status === StatusCodes.SUCCESS_STATUS) {
+            setItems((prevItems: ImageItem[]) =>
+              prevItems.filter((item) => item.id !== id)
+            );
+            showToast(Messages.SUCCESS_MESSAGE, "success");
+          } else {
+            showToast(Messages.ERRORMESSAGE, "error");
+          }
+        });
+      else {
+        showToast(Messages.SOMETHING_WENT_WRONG, "error");
+      }
+    });
   };
 
   return (
     <div className="border border-gray-300 p-4 mb-8 rounded-lg shadow-sm bg-black text-white">
       <h2 className="text-xl font-bold mb-4">{sectionTitle}</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-center">
-        {items.map((item) => (
+        {items?.map((item) => (
           <div key={item.id} className="relative">
             <ImageUpload
               label={item.label}
-              preview={item.preview}
+              preview={item?.src || item.preview || ""}
               onFileChange={(file) => handleFileChange(file, item.id)}
               onUpload={() => handleUpload(item.id)}
             />
