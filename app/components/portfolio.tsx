@@ -1,12 +1,13 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { galleryService } from "@/services";
-import { Query } from "appwrite";
+import { Query, Models } from "appwrite";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
+import converter from "@/utils/appWriteDataToImageDocument";
+import { Apiresponse, Images } from "@/types";
 
 export type ImageListing = {
   id: string;
@@ -15,72 +16,80 @@ export type ImageListing = {
   src: string;
   year: string;
 };
-export default function Portfolio() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [works, setWorks] = useState<ImageListing[]>([]);
 
-  const categories = [
-    "all",
-    imageUploadCategory.HOME_WEDDING,
-    imageUploadCategory.HOME_PERSONAL,
-    imageUploadCategory.HOME_MATERNITY,
-  ];
+const workCategoriesMappinng: { [key: string]: string } = {
+  Wedding: imageUploadCategory.HOME_WEDDING,
+  Personal: imageUploadCategory.HOME_PERSONAL,
+  Maternity: imageUploadCategory.HOME_MATERNITY,
+};
+
+export default function Portfolio() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [works, setWorks] = useState<Images[]>([]);
+
+  const categories = ["all", "Wedding", "Personal", "Maternity"];
 
   useEffect(() => {
     const fetchWorks = async () => {
       try {
-        const res = await galleryService.getDocuments([
-          Query.select(["src", "title", "category", "$id"]),
-          Query.equal("category", [
-            imageUploadCategory.HOME_WEDDING,
-            imageUploadCategory.HOME_PERSONAL,
-            imageUploadCategory.HOME_MATERNITY,
-          ]),
-        ]);
-        setWorks([
-          {
-            id: "1",
-            title: "Digital Dreamscape",
-            category: "wedding",
-            src: "/recents/1.heic",
-            year: "2024",
-          },
-          {
-            id: "2",
-            title: "Abstract Harmony",
-            category: "wedding",
-            src: "/recents/2.heic",
-            year: "2023",
-          },
-          {
-            id: "3",
-            title: "Metal Flow",
-            category: "maternity",
-            src: "/recents/3.heic",
-            year: "2024",
-          },
-          {
-            id: "4",
-            title: "Neon Nights",
-            category: "personal",
-            src: "/recents/4.heic",
-            year: "2023",
-          },
-          {
-            id: "5",
-            title: "Nature's Whisper",
-            category: "personal",
-            src: "/recents/1.heic",
-            year: "2024",
-          },
-          {
-            id: "6",
-            title: "Bronze Echo",
-            category: "maternity",
-            src: "/recents/2.heic",
-            year: "2023",
-          },
-        ]);
+        const res: Apiresponse<Models.Document[] | null> =
+          await galleryService.getDocuments([
+            Query.select(["src", "title", "category", "$id"]),
+            Query.equal("category", [
+              imageUploadCategory.HOME_WEDDING,
+              imageUploadCategory.HOME_PERSONAL,
+              imageUploadCategory.HOME_MATERNITY,
+            ]),
+          ]);
+        if (res?.data) {
+          const convertedData: Images[] | [] = converter(res.data);
+          console.log(convertedData);
+          setWorks(convertedData);
+        }
+        // setWorks([
+        //   {
+        //     id: "1",
+        //     title: "Digital Dreamscape",
+        //     category: "wedding",
+        //     src: "/recents/1.heic",
+        //     year: "2024",
+        //   },
+        //   {
+        //     id: "2",
+        //     title: "Abstract Harmony",
+        //     category: "wedding",
+        //     src: "/recents/2.heic",
+        //     year: "2023",
+        //   },
+        //   {
+        //     id: "3",
+        //     title: "Metal Flow",
+        //     category: "maternity",
+        //     src: "/recents/3.heic",
+        //     year: "2024",
+        //   },
+        //   {
+        //     id: "4",
+        //     title: "Neon Nights",
+        //     category: "personal",
+        //     src: "/recents/4.heic",
+        //     year: "2023",
+        //   },
+        //   {
+        //     id: "5",
+        //     title: "Nature's Whisper",
+        //     category: "personal",
+        //     src: "/recents/1.heic",
+        //     year: "2024",
+        //   },
+        //   {
+        //     id: "6",
+        //     title: "Bronze Echo",
+        //     category: "maternity",
+        //     src: "/recents/2.heic",
+        //     year: "2023",
+        //   },
+        // ]);
       } catch (error) {
         console.error("Error fetching works:", error);
         // Fallback data if API fails
@@ -135,7 +144,9 @@ export default function Portfolio() {
   }, []);
 
   const filteredWorks = works.filter((work) =>
-    selectedCategory === "all" ? true : work.category === selectedCategory
+    selectedCategory === "all"
+      ? true
+      : work.category === workCategoriesMappinng[selectedCategory]
   );
 
   return (

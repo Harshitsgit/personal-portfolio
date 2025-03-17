@@ -18,6 +18,7 @@ export class GalleryService {
   }
 
   async createDocument({
+    id,
     fileId,
     src,
     alt,
@@ -25,6 +26,7 @@ export class GalleryService {
     category,
     description,
   }: Readonly<{
+    id: string;
     fileId: string;
     src: string;
     alt: string;
@@ -36,7 +38,7 @@ export class GalleryService {
       await this.databases.createDocument(
         conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
-        ID.unique(),
+        id,
         { fileId, src, alt, title, category }
       );
       return {

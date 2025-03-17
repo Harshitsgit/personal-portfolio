@@ -1,7 +1,7 @@
 export const imageUploadCategory = {
   HOME_FEATUREDWORKS: "home-Featured-Works",
   HOME_WEDDING: "home-Wedding",
-  HOME_PERSONAL: "home-PersonalA",
+  HOME_PERSONAL: "home-Personal",
   HOME_MATERNITY: "home-Maternity",
   ALBUM_FEATUREDWORKS: "album-featured-works",
   SERVICES_WEDDING: "services-wedding",

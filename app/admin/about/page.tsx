@@ -1,58 +1,170 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import DynamicImageSection from "@/app/components/DynamicImageSection";
 import { galleryService } from "@/services";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
-import { Models, Query } from "appwrite";
-import { Apiresponse, Images, Section } from "@/types";
-import { nanoid } from "nanoid";
+import { Query } from "appwrite";
+import { Action, Images, State } from "@/types";
+import converter from "@/utils/appWriteDataToImageDocument";
+import { galleryReducer } from "@/utils/reducerutils";
+
+const initialState = {
+  sections: {
+    personalPhoto: {
+      items: [],
+      loading: true,
+    },
+  },
+};
+
+// function reducer(state: State, action: Action) {
+//   switch (action.type) {
+//     case "SET_ITEMS": {
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             items: action.payload.items,
+//             loading: false,
+//           },
+//         },
+//       };
+//     }
+//     case "ADD_ITEM":
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             items: [
+//               ...state.sections[action.payload.key].items,
+//               action.payload,
+//             ],
+//           },
+//         },
+//       };
+//     case "UPDATE_ITEM":
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             items: state.sections[action.payload.key].items.map(
+//               (item: Images) =>
+//                 item.id === action.payload.id
+//                   ? { ...item, ...action.payload.data }
+//                   : item
+//             ),
+//           },
+//         },
+//       };
+//     case "REMOVE_ITEM":
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             items: state.sections[action.payload.key].items.filter(
+//               (item: Images) => item.id !== action.payload.id
+//             ),
+//           },
+//         },
+//       };
+//     case "MARK_AS_UPLOADED":
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             items: state.sections[action.payload.key].items.map(
+//               (item: Images) =>
+//                 item.id === action.payload.id
+//                   ? { ...item, isAlreadyUploaded: true }
+//                   : item
+//             ),
+//           },
+//         },
+//       };
+//     case "SET_LOADING": {
+//       return {
+//         ...state,
+//         sections: {
+//           ...state.sections,
+//           [action.payload.key]: {
+//             ...state.sections[action.payload.key],
+//             loading: action.payload.loading,
+//           },
+//         },
+//       };
+//     }
+
+//     default:
+//       return state;
+//   }
+// }
 
 const Home: React.FC = () => {
-  const [items, setItems] = useState<Images[]>([]);
+  const [state, dispatch] = useReducer(galleryReducer, initialState);
 
-  const sections: Section[] = [
+  const sectionsConfig = [
     {
-      id: nanoid(),
-      title: "Personal Photo",
+      key: "personalPhoto",
+      title: "Personal",
       category: imageUploadCategory.ABOUT_PERSONAL_PHOTO,
-      items,
-      setItems,
     },
   ];
 
-  const getDocuments = async () => {
-    const documents: Apiresponse<Models.Document[] | null> =
-      await galleryService.getDocuments([
-        Query.select(["$id", "src", "alt", "title", "category"]),
-        Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
-      ]);
-    if (documents?.data?.length) {
-      const images: Images[] = documents.data.map((doc) => ({
-        ...doc,
-        src: doc.src || "/placeholder.jpg", // Ensure 'src' exists
-        title: doc.title || "Untitled",
-        alt: doc.alt || "Image",
-      }));
-      setItems(images);
-    }
-  };
+  const fetchDocument = useCallback(
+    async ({ key, category }: { key: string; category: string }) => {
+      dispatch({ type: "SET_LOADING", payload: { key, loading: true } });
+      try {
+        const documents = await galleryService.getDocuments([
+          Query.select(["$id", "src", "alt", "title", "category", "fileId"]),
+          Query.equal("category", category),
+        ]);
+        if (documents?.data) {
+          dispatch({
+            type: "SET_ITEMS",
+            payload: { key, items: converter(documents.data) },
+          });
+          dispatch({ type: "SET_LOADING", payload: { key, loading: false } });
+        } else {
+          dispatch({ type: "SET_LOADING", payload: { key, loading: false } });
+        }
+      } catch (error) {
+        console.error(`Error fetching ${category} documents:`, error);
+        dispatch({ type: "SET_LOADING", payload: { key, loading: false } });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    getDocuments();
+    sectionsConfig.forEach(({ key, category }) =>
+      fetchDocument({ key, category })
+    );
   }, []);
 
   return (
     <div className="space-y-8 p-4">
       <h1 className="text-2xl font-bold">Gallery Sections</h1>
       <div className="space-y-8">
-        {sections.map((section) => (
+        {sectionsConfig.map((section) => (
           <DynamicImageSection
-            key={section.id}
+            key={section.key}
+            sectionKey={section.key}
             sectionTitle={section.title}
             fileAddLimit={1}
-            items={items}
-            setItems={setItems}
+            items={state.sections[section.key].items ?? []}
+            dispatch={dispatch}
             category={imageUploadCategory.ABOUT_PERSONAL_PHOTO}
+            loading={state.sections[section.key].loading}
           />
         ))}
       </div>

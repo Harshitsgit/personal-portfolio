@@ -1,19 +1,24 @@
 import React from "react";
 import Gallery from "@/app/components/gallery";
 import { galleryService } from "@/services";
-import { Query } from "appwrite";
+import { Models, Query } from "appwrite";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
+import { Apiresponse } from "@/types";
+import converter from "@/utils/appWriteDataToImageDocument";
 
 async function Album() {
   let images: any = [];
   const fetchWorks = async () => {
     try {
-      const res = await galleryService.getDocuments([
-        Query.select(["src", "title", "alt"]),
-        Query.equal("category", imageUploadCategory.ALBUM_FEATUREDWORKS),
-      ]);
-      const data = res?.data || [];
-      images = data;
+      const res: Apiresponse<Models.Document[] | null> =
+        await galleryService.getDocuments([
+          Query.select(["src", "title", "alt"]),
+          Query.equal("category", imageUploadCategory.ALBUM_FEATUREDWORKS),
+        ]);
+      if (res?.data) {
+        const convertedData = converter(res.data);
+        images = convertedData;
+      }
     } catch (error) {
       console.error("Error fetching works:", error);
       images = [

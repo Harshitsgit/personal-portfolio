@@ -1,24 +1,30 @@
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
 import { galleryService } from "@/services";
-import { Query } from "appwrite";
+import { Apiresponse } from "@/types";
+import converter from "@/utils/appWriteDataToImageDocument";
+import { Models, Query } from "appwrite";
 import Image from "next/image";
 
 export default async function AboutUs() {
   let image: any = {};
-  const fetchWorks = async () => {
-    try {
-      const res = await galleryService.getDocuments([
-        Query.select(["src", "title", "alt"]),
-        Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
-      ]);
-      const [data] = res?.data;
 
-      image = data;
+  async function fetchWorks() {
+    try {
+      const res: Apiresponse<Models.Document[] | null> =
+        await galleryService.getDocuments([
+          Query.select(["src", "title", "alt"]),
+          Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
+        ]);
+      console.log("🚀 ~ fetchWorks ~ res?.data:", res?.data);
+      if (res?.data?.length) {
+        const [convertedData] = converter(res?.data);
+        image = convertedData;
+      }
     } catch (error) {
       image = { src: "/about/1.heic" };
       console.error("Error fetching works:", error);
     }
-  };
+  }
 
   await fetchWorks();
   return (
