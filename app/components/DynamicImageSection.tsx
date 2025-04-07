@@ -16,14 +16,16 @@ const DynamicImageSection = ({
   dispatch,
   category,
   loading,
+  showTitleDescButton = false,
 }: {
   sectionKey: string;
   sectionTitle: string;
   fileAddLimit?: number;
-  items: Images[];
+  items: Images[] | [];
   dispatch: any; // Replaces setItems with a reducer-based dispatch
   category: string;
   loading: boolean;
+  showTitleDescButton?: boolean;
 }) => {
   const { showToast } = useToast();
   const [workingId, setWorkingId] = useState<string | null>(null);
@@ -60,9 +62,13 @@ const DynamicImageSection = ({
   };
 
   const handleUpload = async (id: string) => {
-    debugger;
-    setWorkingId(id);
     const item = items.find((i) => i.id === id);
+    if (!item) return;
+    if (showTitleDescButton && !item?.title && !item?.description) {
+      showToast("Please add title and description", "error");
+      return;
+    }
+    setWorkingId(id);
     if (item?.file) {
       const response = await fileService.createFile(item.file);
       const fileId = response?.data || "";
@@ -72,9 +78,9 @@ const DynamicImageSection = ({
         fileId,
         src: url.data || "",
         alt: `${item.label.replaceAll(" ", "-")}`,
-        title: "",
+        title: item?.alt || "",
         category,
-        description: "",
+        description: item?.description || "",
       });
 
       if (
@@ -120,11 +126,10 @@ const DynamicImageSection = ({
     }
 
     const item = items.find((e) => e.id === id);
-    if (!item?.src) {
+    if (!item?.src || !item?.isAlreadyUploaded) {
       dispatch({ type: "REMOVE_ITEM", payload: { id, key: sectionKey } });
       return;
     }
-    debugger;
 
     fileService.deleteFile(item.fileId ?? "").then((res) => {
       if (res.status === StatusCodes.SUCCESS_STATUS) {
@@ -145,6 +150,40 @@ const DynamicImageSection = ({
     });
   };
 
+  const handleTitleDescriptionUpdation = async (
+    id: string,
+    title: string,
+    description: string
+  ): Promise<boolean> => {
+    if (!title || !description) {
+      showToast("Please enter details properly", "error");
+      return false;
+    }
+    dispatch({
+      type: "ADD_TITLE_DESCRIPTION",
+      payload: { title, description, id, key: sectionKey },
+    });
+
+    const item = items.find((i) => i.id === id);
+    debugger;
+    if (item?.isAlreadyUploaded) {
+      const response = await galleryService.updateDocument(id, {
+        fileId: item?.fileId ?? "",
+        src: item?.src ?? "",
+        alt: item?.alt ?? "",
+        title,
+        description,
+        category,
+      });
+
+      if (response.status === StatusCodes.SUCCESS_STATUS) {
+        showToast("Details Updated", "success");
+      } else showToast("Details Updation failed", "error");
+    }
+
+    return true;
+  };
+
   return (
     <div className="border border-gray-300 p-4 mb-8 rounded-lg shadow-sm bg-black text-white">
       {loading ? (
@@ -158,11 +197,16 @@ const DynamicImageSection = ({
             {items?.map((item) => (
               <div key={item.id} className="relative">
                 <ImageUpload
+                  id={item.id}
                   label={item.label || sectionTitle}
                   src={item?.src || ""}
                   onFileChange={(file) => handleFileChange(file, item.id)}
                   onUpload={() => handleUpload(item.id)}
                   isAlreadyUploaded={item.isAlreadyUploaded}
+                  showTitleDescButton={showTitleDescButton}
+                  handleTitleDescriptionUpdation={
+                    handleTitleDescriptionUpdation
+                  }
                 />
                 {workingId === item.id && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white">

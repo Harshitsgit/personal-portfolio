@@ -18,22 +18,16 @@ export const updateSection = (
 };
 
 export function galleryReducer(state: State, action: Action): State {
+  const { key } = action.payload ?? "";
   switch (action.type) {
     case "SET_ITEMS":
-      return updateSection(
-        state,
-        action.payload.key,
-        () => action.payload.items
-      );
+      return updateSection(state, key, () => action.payload.items);
 
     case "ADD_ITEM":
-      return updateSection(state, action.payload.key, (items) => [
-        ...items,
-        action.payload,
-      ]);
+      return updateSection(state, key, (items) => [...items, action.payload]);
 
     case "UPDATE_ITEM":
-      return updateSection(state, action.payload.key, (items) =>
+      return updateSection(state, key, (items) =>
         items.map((item) =>
           item.id === action.payload.id
             ? { ...item, ...action.payload.data }
@@ -42,13 +36,12 @@ export function galleryReducer(state: State, action: Action): State {
       );
 
     case "REMOVE_ITEM":
-      return updateSection(state, action.payload.key, (items) =>
+      return updateSection(state, key, (items) =>
         items.filter((item) => item.id !== action.payload.id)
       );
 
     case "MARK_AS_UPLOADED":
-      debugger;
-      return updateSection(state, action.payload.key, (items) =>
+      return updateSection(state, key, (items) =>
         items.map((item) =>
           item.id === action.payload.id
             ? {
@@ -65,12 +58,25 @@ export function galleryReducer(state: State, action: Action): State {
         ...state,
         sections: {
           ...state.sections,
-          [action.payload.key]: {
-            ...state.sections[action.payload.key],
+          [key]: {
+            ...state.sections[key],
             loading: action.payload.loading,
           },
         },
       };
+
+    case "ADD_TITLE_DESCRIPTION":
+      return updateSection(state, key, (items) =>
+        items.map((item) =>
+          item.id === action.payload.id
+            ? {
+                ...item,
+                title: action.payload.title,
+                description: action.payload.description,
+              }
+            : item
+        )
+      );
 
     default:
       return state;

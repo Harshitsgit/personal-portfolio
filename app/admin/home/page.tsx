@@ -248,7 +248,7 @@ const Home: React.FC = () => {
           Query.select(["$id", "src", "alt", "title", "category", "fileId"]),
           Query.equal("category", category),
         ]);
-        if (documents?.data) {
+        if (documents?.data?.length) {
           dispatch({
             type: "SET_ITEMS",
             payload: { key, items: converter(documents.data) },

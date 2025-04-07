@@ -11,6 +11,8 @@ import { Apiresponse } from "@/types";
 import { Models } from "appwrite";
 import { useRouter } from "next/navigation";
 import { useToast } from "../context/ToastContextProvider";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContextProvider";
 
 type FormData = {
   email: string;
@@ -21,12 +23,13 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { signIn } = useContext(AuthContext);
   const { showToast } = useToast();
   const router = useRouter();
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
       email: "",
@@ -42,6 +45,7 @@ export function LoginForm({
       .then((res: Apiresponse<Models.Session>) => {
         if (res.data) {
           showToast("Login Succesfully", "success");
+          signIn({ $id: res.data.$id });
           router.push("/admin/home");
         } else {
           showToast("Invalid credentials", "error");

@@ -5,7 +5,6 @@ import { imageUploadCategory } from "@/constants/imageuploadCategory";
 import { galleryService } from "@/services";
 import { Query } from "appwrite";
 import converter from "@/utils/appWriteDataToImageDocument";
-import { Action, Images, State } from "@/types";
 import { galleryReducer } from "@/utils/reducerutils";
 
 const initialState = {
@@ -29,120 +28,28 @@ const initialState = {
   },
 };
 
-// function reducer(state: State, action: Action) {
-//   switch (action.type) {
-//     case "SET_ITEMS": {
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: action.payload.items,
-//             loading: false,
-//           },
-//         },
-//       };
-//     }
-//     case "ADD_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: [
-//               ...state.sections[action.payload.key].items,
-//               action.payload,
-//             ],
-//           },
-//         },
-//       };
-//     case "UPDATE_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.map(
-//               (item: Images) =>
-//                 item.id === action.payload.id
-//                   ? { ...item, ...action.payload.data }
-//                   : item
-//             ),
-//           },
-//         },
-//       };
-//     case "REMOVE_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.filter(
-//               (item: Images) => item.id !== action.payload.id
-//             ),
-//           },
-//         },
-//       };
-//     case "MARK_AS_UPLOADED":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.map(
-//               (item: Images) =>
-//                 item.id === action.payload.id
-//                   ? { ...item, isAlreadyUploaded: true }
-//                   : item
-//             ),
-//           },
-//         },
-//       };
-//     case "SET_LOADING": {
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             loading: action.payload.loading,
-//           },
-//         },
-//       };
-//     }
-
-//     default:
-//       return state;
-//   }
-// }
-
 const Services: React.FC = () => {
   const [state, dispatch] = useReducer(galleryReducer, initialState);
   const sectionsConfig = [
     {
-      key: "preWeddingShoot",
-      title: "Featured Works",
-      category: imageUploadCategory.HOME_FEATUREDWORKS,
-    },
-    {
       key: "weddingShoot",
       title: "Wedding",
-      category: imageUploadCategory.HOME_WEDDING,
+      category: imageUploadCategory.SERVICES_WEDDING,
+    },
+    {
+      key: "preWeddingShoot",
+      title: "Pre Wedding",
+      category: imageUploadCategory.SERVICES_PRE_WEDDING,
     },
     {
       key: "personalShoot",
       title: "Personal",
-      category: imageUploadCategory.HOME_PERSONAL,
+      category: imageUploadCategory.SERVICES_PERSONAL_SHOOT,
     },
     {
       key: "maternityShoot",
       title: "Maternity",
-      category: imageUploadCategory.HOME_MATERNITY,
+      category: imageUploadCategory.SERVICES_MATERNITY,
     },
   ];
 
@@ -151,10 +58,18 @@ const Services: React.FC = () => {
       dispatch({ type: "SET_LOADING", payload: { key, loading: true } });
       try {
         const documents = await galleryService.getDocuments([
-          Query.select(["$id", "src", "alt", "title", "category", "fileId"]),
+          Query.select([
+            "$id",
+            "src",
+            "alt",
+            "title",
+            "category",
+            "fileId",
+            "description",
+          ]),
           Query.equal("category", category),
         ]);
-        if (documents?.data) {
+        if (documents?.data?.length) {
           dispatch({
             type: "SET_ITEMS",
             payload: { key, items: converter(documents.data) },
@@ -191,6 +106,7 @@ const Services: React.FC = () => {
             category={section.category}
             items={state.sections[section.key]?.items ?? []}
             loading={state.sections[section.key]?.loading ?? true}
+            showTitleDescButton={true}
           />
         ))}
       </div>

@@ -1,7 +1,6 @@
-import React from "react";
+import { redirect } from "next/navigation";
 
-function page({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <>{children}</>;
+export default function Page() {
+  redirect("/admin/home");
+  return null;
 }
-
-export default page;

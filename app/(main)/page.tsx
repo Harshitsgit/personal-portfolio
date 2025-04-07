@@ -4,19 +4,19 @@ import Portfolio from "../components/portfolio";
 import { galleryService } from "@/services";
 import { Query } from "appwrite";
 import { imageUploadCategory } from "@/constants/imageuploadCategory";
+import converter from "@/utils/appWriteDataToImageDocument";
 
 export default async function Page() {
   let images: any = [];
   const fetchWorks = async () => {
-    try {
-      const res = await galleryService.getDocuments([
-        Query.select(["src", "title", "alt"]),
-        Query.equal("category", imageUploadCategory.HOME_FEATUREDWORKS),
-      ]);
-      const data = res?.data || [];
+    const res = await galleryService.getDocuments([
+      Query.select(["src", "title", "alt"]),
+      Query.equal("category", imageUploadCategory.HOME_FEATUREDWORKS),
+    ]);
+    if (res?.data) {
+      const data = converter(res.data);
       images = data;
-    } catch (error) {
-      console.error("Error fetching works:", error);
+    } else {
       images = [
         {
           src: "/recents/1.heic",

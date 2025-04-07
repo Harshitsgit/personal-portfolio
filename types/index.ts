@@ -56,4 +56,8 @@ export type Action =
       type: "MARK_AS_UPLOADED";
       payload: { key: string; id: string; fileId?: string };
     }
-  | { type: "SET_LOADING"; payload: { key: string; loading: boolean } };
+  | { type: "SET_LOADING"; payload: { key: string; loading: boolean } }
+  | {
+      type: "ADD_TITLE_DESCRIPTION";
+      payload: { key: string; id: string; title: string; description: string };
+    };

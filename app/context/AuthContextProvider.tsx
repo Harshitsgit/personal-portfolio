@@ -14,7 +14,7 @@ type AuthContextType = {
   signOut: () => void;
 };
 
-const AuthContext = createContext<AuthContextType>(initialState);
+export const AuthContext = createContext<AuthContextType>(initialState);
 
 export const AuthContextProvider = ({
   children,

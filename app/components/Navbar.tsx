@@ -40,7 +40,7 @@ const Navbar = function ({ children }: { children: React.ReactNode }) {
           {/* Dropdown Menu */}
           {isDropdownOpen && (
             <ul className="absolute right-0 mt-2 w-48 bg-white text-gray-900 shadow-lg rounded-lg overflow-hidden z-40">
-              <li className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+              {/* <li className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 Action
               </li>
               <li className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
@@ -48,7 +48,7 @@ const Navbar = function ({ children }: { children: React.ReactNode }) {
               </li>
               <li>
                 <hr className="border-gray-300" />
-              </li>
+              </li> */}
               <li
                 className="block px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 onClick={handleSignOut}

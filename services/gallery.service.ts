@@ -69,9 +69,9 @@ export class GalleryService {
       category: string;
       description: string;
     }>
-  ) {
+  ): Promise<Apiresponse<null>> {
     try {
-      return await this.databases.updateDocument(
+      await this.databases.updateDocument(
         conf.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         conf.NEXT_PUBLIC_APPWRITE_GALLERY_COLLECTION_ID,
         id,
@@ -81,10 +81,18 @@ export class GalleryService {
           alt,
           title,
           category,
+          description,
         }
       );
+
+      return {
+        status: StatusCodes.SUCCESS_STATUS,
+        data: null,
+        message: Messages.SUCCESS_MESSAGE,
+      };
     } catch (error) {
       console.log("Appwrite serive :: updateDocument :: error", error);
+      return handleApiError(error);
     }
   }
 

@@ -9,8 +9,9 @@ function converter(documents: Models.Document[]) {
     alt: doc?.alt || "Image",
     label: "",
     id: doc?.$id,
-    fileId: doc?.fileId ?? "",
+    fileId: doc?.fileId || "",
     isAlreadyUploaded: true,
+    description: doc?.description || "",
   }));
 
   return images;
