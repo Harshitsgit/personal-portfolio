@@ -15,9 +15,22 @@ async function Album() {
           Query.select(["src", "title", "alt"]),
           Query.equal("category", imageUploadCategory.ALBUM_FEATUREDWORKS),
         ]);
-      if (res?.data) {
+      if (res?.data?.length) {
         const convertedData = converter(res.data);
         images = convertedData;
+      } else {
+        images = [
+          {
+            src: "/albums/1.jpg",
+            alt: "Art piece 1",
+            title: "Ethereal Dreams",
+          },
+          {
+            src: "/albums/2.jpg",
+            alt: "Art piece 2",
+            title: "Urban Symphony",
+          },
+        ];
       }
     } catch (error) {
       console.error("Error fetching works:", error);

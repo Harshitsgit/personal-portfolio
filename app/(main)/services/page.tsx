@@ -18,7 +18,7 @@ export default async function ProjectsPage() {
       ]),
     ]);
 
-    if (res?.data) {
+    if (res?.data?.length) {
       const data = converter(res.data);
       projects = data;
     } else {

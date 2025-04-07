@@ -13,7 +13,7 @@ export default async function Page() {
       Query.select(["src", "title", "alt"]),
       Query.equal("category", imageUploadCategory.HOME_FEATUREDWORKS),
     ]);
-    if (res?.data) {
+    if (res?.data?.length) {
       const data = converter(res.data);
       images = data;
     } else {

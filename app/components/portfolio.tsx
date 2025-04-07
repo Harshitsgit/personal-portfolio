@@ -41,55 +41,56 @@ export default function Portfolio() {
               imageUploadCategory.HOME_MATERNITY,
             ]),
           ]);
-        if (res?.data) {
+        if (res?.data?.length) {
           const convertedData: Images[] | [] = converter(res.data);
           console.log(convertedData);
           setWorks(convertedData);
+        } else {
+          setWorks([
+            {
+              id: "1",
+              title: "Digital Dreamscape",
+              category: "wedding",
+              src: "/recents/1.heic",
+              year: "2024",
+            },
+            {
+              id: "2",
+              title: "Abstract Harmony",
+              category: "wedding",
+              src: "/recents/2.heic",
+              year: "2023",
+            },
+            {
+              id: "3",
+              title: "Metal Flow",
+              category: "maternity",
+              src: "/recents/3.heic",
+              year: "2024",
+            },
+            {
+              id: "4",
+              title: "Neon Nights",
+              category: "personal",
+              src: "/recents/4.heic",
+              year: "2023",
+            },
+            {
+              id: "5",
+              title: "Nature's Whisper",
+              category: "personal",
+              src: "/recents/1.heic",
+              year: "2024",
+            },
+            {
+              id: "6",
+              title: "Bronze Echo",
+              category: "maternity",
+              src: "/recents/2.heic",
+              year: "2023",
+            },
+          ]);
         }
-        // setWorks([
-        //   {
-        //     id: "1",
-        //     title: "Digital Dreamscape",
-        //     category: "wedding",
-        //     src: "/recents/1.heic",
-        //     year: "2024",
-        //   },
-        //   {
-        //     id: "2",
-        //     title: "Abstract Harmony",
-        //     category: "wedding",
-        //     src: "/recents/2.heic",
-        //     year: "2023",
-        //   },
-        //   {
-        //     id: "3",
-        //     title: "Metal Flow",
-        //     category: "maternity",
-        //     src: "/recents/3.heic",
-        //     year: "2024",
-        //   },
-        //   {
-        //     id: "4",
-        //     title: "Neon Nights",
-        //     category: "personal",
-        //     src: "/recents/4.heic",
-        //     year: "2023",
-        //   },
-        //   {
-        //     id: "5",
-        //     title: "Nature's Whisper",
-        //     category: "personal",
-        //     src: "/recents/1.heic",
-        //     year: "2024",
-        //   },
-        //   {
-        //     id: "6",
-        //     title: "Bronze Echo",
-        //     category: "maternity",
-        //     src: "/recents/2.heic",
-        //     year: "2023",
-        //   },
-        // ]);
       } catch (error) {
         console.error("Error fetching works:", error);
         // Fallback data if API fails

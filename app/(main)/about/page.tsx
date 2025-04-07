@@ -19,6 +19,8 @@ export default async function AboutUs() {
       if (res?.data?.length) {
         const [convertedData] = converter(res?.data);
         image = convertedData;
+      } else {
+        image = { src: "/about/1.heic" };
       }
     } catch (error) {
       image = { src: "/about/1.heic" };
