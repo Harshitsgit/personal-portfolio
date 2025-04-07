@@ -15,7 +15,7 @@ export default async function AboutUs() {
           Query.select(["src", "title", "alt"]),
           Query.equal("category", imageUploadCategory.ABOUT_PERSONAL_PHOTO),
         ]);
-      console.log("🚀 ~ fetchWorks ~ res?.data:", res?.data);
+
       if (res?.data?.length) {
         const [convertedData] = converter(res?.data);
         image = convertedData;
