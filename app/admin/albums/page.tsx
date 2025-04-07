@@ -5,7 +5,6 @@ import { imageUploadCategory } from "@/constants/imageuploadCategory";
 import { Query } from "appwrite";
 import { galleryService } from "@/services";
 import converter from "@/utils/appWriteDataToImageDocument";
-import { Action, State } from "@/types";
 import { galleryReducer } from "@/utils/reducerutils";
 
 const initialState = {
@@ -16,98 +15,6 @@ const initialState = {
     },
   },
 };
-
-// function reducer(state: State, action: Action) {
-//   switch (action.type) {
-//     case "SET_ITEMS": {
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: action.payload.items,
-//             loading: false,
-//           },
-//         },
-//       };
-//     }
-//     case "ADD_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: [
-//               ...state.sections[action.payload.key].items,
-//               action.payload,
-//             ],
-//           },
-//         },
-//       };
-//     case "UPDATE_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.map(
-//               (item: Images) =>
-//                 item.id === action.payload.id
-//                   ? { ...item, ...action.payload.data }
-//                   : item
-//             ),
-//           },
-//         },
-//       };
-//     case "REMOVE_ITEM":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.filter(
-//               (item: Images) => item.id !== action.payload.id
-//             ),
-//           },
-//         },
-//       };
-//     case "MARK_AS_UPLOADED":
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             items: state.sections[action.payload.key].items.map(
-//               (item: Images) =>
-//                 item.id === action.payload.id
-//                   ? { ...item, isAlreadyUploaded: true }
-//                   : item
-//             ),
-//           },
-//         },
-//       };
-//     case "SET_LOADING": {
-//       return {
-//         ...state,
-//         sections: {
-//           ...state.sections,
-//           [action.payload.key]: {
-//             ...state.sections[action.payload.key],
-//             loading: action.payload.loading,
-//           },
-//         },
-//       };
-//     }
-
-//     default:
-//       return state;
-//   }
-// }
 
 const Home: React.FC = () => {
   const [state, dispatch] = useReducer(galleryReducer, initialState);

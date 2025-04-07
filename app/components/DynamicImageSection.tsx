@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import ImageUpload from "@/app/components/ImageUpload";
 import { CirclePlus, CircleX } from "lucide-react";
-import { fileService, galleryService } from "@/services";
+import { galleryService } from "@/services";
 import { useToast } from "../context/ToastContextProvider";
 import { Messages, StatusCodes } from "@/constants";
 import { Images } from "@/types";
@@ -70,29 +70,36 @@ const DynamicImageSection = ({
     }
     setWorkingId(id);
     if (item?.file) {
-      const response = await fileService.createFile(item.file);
-      const fileId = response?.data || "";
-      const url = fileService.getFilePreview(fileId);
-      const createdDocument = await galleryService.createDocument({
-        id,
-        fileId,
-        src: url.data || "",
-        alt: `${item.label.replaceAll(" ", "-")}`,
-        title: item?.alt || "",
-        category,
-        description: item?.description || "",
+      const formData = new FormData();
+      formData.append("file", item.file);
+
+      const res = await fetch("/api/file/upload", {
+        method: "POST",
+        body: formData,
       });
 
-      if (
-        response.status === StatusCodes.SUCCESS_STATUS &&
-        createdDocument.status === StatusCodes.SUCCESS_STATUS
-      ) {
-        showToast("File uploaded successfully", "success");
-
-        dispatch({
-          type: "MARK_AS_UPLOADED",
-          payload: { id, key: sectionKey, fileId },
+      const response = await res.json();
+      if (response.status === StatusCodes.SUCCESS_STATUS) {
+        const { key = "", url = "" } = response.data;
+        const createdDocument = await galleryService.createDocument({
+          id,
+          fileId: key,
+          src: url,
+          alt: `${item.label.replaceAll(" ", "-")}`,
+          title: item?.alt || "",
+          category,
+          description: item?.description || "",
         });
+        if (
+          response.status === StatusCodes.SUCCESS_STATUS &&
+          createdDocument.status === StatusCodes.SUCCESS_STATUS
+        ) {
+          showToast("File uploaded successfully", "success");
+          dispatch({
+            type: "MARK_AS_UPLOADED",
+            payload: { id, key: sectionKey, fileId: key },
+          });
+        }
       } else showToast("Problem while uploading file", "error");
     } else showToast("Please select a file to upload", "error");
     setWorkingId(null);
@@ -119,7 +126,7 @@ const DynamicImageSection = ({
     });
   };
 
-  const handleRemoveItem = (id: string) => {
+  const handleRemoveItem = async (id: string) => {
     setWorkingId(id);
     if (items.length === 4) {
       return;
@@ -130,24 +137,36 @@ const DynamicImageSection = ({
       dispatch({ type: "REMOVE_ITEM", payload: { id, key: sectionKey } });
       return;
     }
+    try {
+      const res = await fetch("/api/file/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: item.fileId }),
+      });
 
-    fileService.deleteFile(item.fileId ?? "").then((res) => {
-      if (res.status === StatusCodes.SUCCESS_STATUS) {
-        galleryService.deleteDocument(item.id ?? "").then((res) => {
-          if (res.status === StatusCodes.SUCCESS_STATUS) {
-            dispatch({ type: "REMOVE_ITEM", payload: { id, key: sectionKey } });
-            showToast(Messages.SUCCESS_MESSAGE, "success");
-            setWorkingId(null);
-          } else {
-            showToast(Messages.ERRORMESSAGE, "error");
-            setWorkingId(null);
-          }
-        });
+      const result = await res.json();
+
+      if (result?.status === StatusCodes.SUCCESS_STATUS) {
+        const deletedRecordResponse = await galleryService.deleteDocument(
+          item.id ?? ""
+        );
+        if (deletedRecordResponse.status === StatusCodes.SUCCESS_STATUS) {
+          dispatch({
+            type: "REMOVE_ITEM",
+            payload: { id, key: sectionKey },
+          });
+          showToast(Messages.SUCCESS_MESSAGE, "success");
+        } else {
+          showToast(Messages.ERRORMESSAGE, "error");
+        }
+        setWorkingId(null);
       } else {
-        showToast(Messages.SOMETHING_WENT_WRONG, "error");
+        showToast(Messages.ERRORMESSAGE, "error");
         setWorkingId(null);
       }
-    });
+    } catch (error) {
+      showToast(Messages.ERRORMESSAGE, "error");
+    }
   };
 
   const handleTitleDescriptionUpdation = async (
